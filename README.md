@@ -10,6 +10,26 @@ A mobile-first, zero-dependency **2D Real-Time Action RPG** built purely with **
 
 Venture forth from the tranquil sanctuary of **Emberhearth Village** into the monster-infested depths of **Whisperwood**, uncover forgotten treasures within the treacherous **Sunken Ruins**, and face the fiery wrath of the **Cinder Warden** in the Sanctum.
 
+<p align="center">
+  <img src="assets/gameplay-combat.gif" alt="Embervale RPG Real-Time Combat Gameplay Preview" width="340" />
+</p>
+
+---
+
+## 🌟 Visual Highlights & Screenshots
+
+### ⚔️ Real-Time Combat & World Boss
+| Whisperwood Combat & Telegraphs | Cinder Warden Boss Battle |
+| :---: | :---: |
+| <img src="assets/screenshots/combat-whisperwood.png" alt="Whisperwood Combat" width="340" /> | <img src="assets/screenshots/boss-cinder-warden.png" alt="Cinder Warden Boss Battle" width="340" /> |
+| *Soft auto-aim, combo slashes & enemy windup zones* | *Full Arena Boss Bar, flame slams & phase 2 rage* |
+
+### 🎒 RPG Progression & Village Economy
+| Bag & Stat Comparison | Skills Upgrade Tree | Merchant Pip's Village Shop |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/inventory-gear-comparison.png" alt="Gear Stat Comparison" width="225" /> | <img src="assets/screenshots/skills-upgrade-tree.png" alt="Skills Upgrade Tree" width="225" /> | <img src="assets/screenshots/merchant-village-shop.png" alt="Village Shop" width="225" /> |
+| *Live ▲ / ▼ gear stat previews* | *Radial CD sweeps & 5-rank masteries* | *Consumables & tiered equipment* |
+
 ---
 
 ## 🌟 Key Features
@@ -104,6 +124,9 @@ Built with a strict **zero-runtime-dependency** philosophy:
 embervale-rpg/
 ├── index.html              # Mobile-first shell, HUD, touch deck & slide-up drawers
 ├── style.css               # Zero-scroll mobile layout, glassmorphic HUD & desktop media queries
+├── assets/
+│   ├── gameplay-combat.gif # Animated combat & skills gameplay preview
+│   └── screenshots/        # High-res screenshots of combat, boss, inventory, skills & shop
 ├── src/
 │   ├── data.js             # Catalogs for items, skills, enemies, shop inventory & quests
 │   ├── icons.js            # Scoped SVG definitions and procedural Canvas 2D item icon renderers
