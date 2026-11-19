@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0e121b">
+  <title>Embervale RPG — 2D Action Adventure</title>
+  <meta name="description" content="Explore Whisperwood, collect gear and gold, cast skills, and defeat the Cinder Warden in this mobile-first 2D Action RPG.">
+  <link rel="stylesheet" href="style.css">
+  <script src="src/data.js" defer></script>
+  <script src="src/icons.js" defer></script>
+  <script src="src/rpg.js" defer></script>
+  <script src="src/world.js" defer></script>
+  <script src="src/combat.js" defer></script>
+  <script src="src/save.js" defer></script>
+  <script src="src/audio.js" defer></script>
+  <script src="src/render.js" defer></script>
+  <script src="src/input.js" defer></script>
+  <script src="src/ui.js" defer></script>
+  <script src="src/main.js" defer></script>
+</head>
+<body>
+  <main id="game-shell" class="game-shell">
+    <canvas id="game-canvas" aria-label="Embervale 2D RPG World"></canvas>
+
+    <!-- Top HUD -->
+    <header class="hud-top" aria-label="Player Status">
+      <div class="hud-row">
+        <div class="hero-card">
+          <div class="lv-badge" id="hud-level">LV 1</div>
+          <div class="vitals">
+            <div class="bar bar-hp">
+              <div class="bar-fill" id="hud-hp-fill"></div>
+              <span class="bar-text" id="hud-hp-text">100 / 100</span>
+            </div>
+            <div class="bar bar-mp">
+              <div class="bar-fill" id="hud-mp-fill"></div>
+              <span class="bar-text" id="hud-mp-text">50 / 50</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-actions">
+          <div class="gold-pill" id="hud-gold" aria-label="Gold">
+            <span class="coin-dot" aria-hidden="true"></span>
+            <strong id="hud-gold-text">25</strong>
+          </div>
+          <button type="button" class="hud-btn" id="btn-menu" aria-label="Open Bag and Hero Menu">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 7h12l1 13H5L6 7z"></path>
+              <path d="M9 7a3 3 0 0 1 6 0"></path>
+            </svg>
+            <span>Menu</span>
+            <i class="notif-dot" id="menu-notif" hidden></i>
+          </button>
+          <button type="button" class="hud-btn hud-icon-btn" id="btn-mute" aria-label="Toggle Sound">
+            <svg id="icon-sound-on" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+            <svg id="icon-sound-off" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="exp-strip" aria-label="Experience">
+        <div class="exp-fill" id="hud-exp-fill"></div>
+        <span class="exp-label" id="hud-exp-text">EXP 0 / 40</span>
+      </div>
+
+      <div class="hud-subrow">
+        <span class="zone-pill" id="hud-zone">Emberhearth Village</span>
+        <button type="button" class="quest-pill" id="hud-quest-pill">
+          <span class="quest-dot" aria-hidden="true"></span>
+          <span id="hud-quest-text">Clear the Whisperwood (0/4)</span>
+        </button>
+      </div>
+
+      <!-- Boss Health Bar -->
+      <div class="boss-bar-wrap" id="boss-bar-wrap" hidden>
+        <div class="boss-title">
+          <strong id="boss-name">Cinder Warden</strong>
+          <span id="boss-hp-text">540 / 540</span>
+        </div>
+        <div class="boss-track">
+          <div class="boss-fill" id="boss-hp-fill"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Zone Transition Toast -->
+    <div class="zone-banner" id="zone-banner" aria-live="polite" hidden>
+      <strong id="zone-banner-title">Whisperwood</strong>
+      <span id="zone-banner-sub">Lv 1 - 3</span>
+    </div>
+
+    <!-- Contextual Interact Prompt -->
+    <button type="button" class="interact-pill" id="btn-interact" hidden>
+      <span class="interact-badge" id="interact-key">E</span>
+      <span id="interact-label">Talk</span>
+    </button>
+
+    <!-- Desktop Shortcuts Strip (hidden on touch/mobile) -->
+    <div class="desktop-hints" id="desktop-hints" aria-hidden="true">
+      <span><kbd>WASD</kbd> Move</span>
+      <span><kbd>Space</kbd> Attack</span>
+      <span><kbd>1-4</kbd> Skills</span>
+      <span><kbd>Q</kbd> Potion</span>
+      <span><kbd>E</kbd> Interact</span>
+      <span><kbd>B</kbd> Bag/Menu</span>
+    </div>
+
+    <!-- Bottom Touch Controls -->
+    <section class="touch-deck" id="touch-deck" aria-label="Touch Controls">
+      <!-- Left Analog Joystick -->
+      <div class="joystick-zone" id="joystick-zone">
+        <div class="joystick-base" id="joystick-base">
+          <div class="joystick-knob" id="joystick-knob"></div>
+        </div>
+      </div>
+
+      <!-- Right Action Arc -->
+      <div class="action-cluster">
+        <div class="skills-arc">
+          <button type="button" class="skill-btn" data-skill="cleave_arc" id="btn-skill-cleave_arc" aria-label="Cleave Arc">
+            <span class="skill-sweep"></span>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 17a9 9 0 0 1 13-11"></path>
+              <path d="M14.5 4.5L19 9l-5 5"></path>
+            </svg>
+            <em class="skill-tag">1</em>
+            <span class="skill-mp">12</span>
+            <strong class="skill-cd" hidden></strong>
+            <span class="skill-lock" hidden>Lv2</span>
+          </button>
+
+          <button type="button" class="skill-btn" data-skill="dash_strike" id="btn-skill-dash_strike" aria-label="Dash Strike">
+            <span class="skill-sweep"></span>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"></path>
+            </svg>
+            <em class="skill-tag">2</em>
+            <span class="skill-mp">10</span>
+            <strong class="skill-cd" hidden></strong>
+            <span class="skill-lock" hidden>Lv2</span>
+          </button>
+
+          <button type="button" class="skill-btn" data-skill="sunfire_bolt" id="btn-skill-sunfire_bolt" aria-label="Sunfire Bolt">
+            <span class="skill-sweep"></span>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2c1.5 3.5 5 5.2 5 9.5a5 5 0 0 1-10 0c0-2.5 1.3-4.6 3-6.2 0 1.8.8 3 2 3.7 0-2.4.3-4.6 0-7z"></path>
+            </svg>
+            <em class="skill-tag">3</em>
+            <span class="skill-mp">16</span>
+            <strong class="skill-cd" hidden></strong>
+            <span class="skill-lock">Lv2</span>
+          </button>
+
+          <button type="button" class="skill-btn" data-skill="sentinel_aegis" id="btn-skill-sentinel_aegis" aria-label="Sentinel Aegis">
+            <span class="skill-sweep"></span>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l7 3v5c0 4.4-3 8.1-7 10-4-1.9-7-5.6-7-10V6l7-3z"></path>
+              <path d="M12 8v6M9 11h6"></path>
+            </svg>
+            <em class="skill-tag">4</em>
+            <span class="skill-mp">22</span>
+            <strong class="skill-cd" hidden></strong>
+            <span class="skill-lock">Lv2</span>
+          </button>
+        </div>
+
+        <div class="main-buttons-row">
+          <button type="button" class="potion-btn" id="btn-potion" aria-label="Use Health Potion">
+            <span class="potion-icon-wrap" id="potion-icon-wrap">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 3h6"></path>
+                <path d="M10 3v4l-4.5 6.8A3 3 0 0 0 8 18.5h8a3 3 0 0 0 2.5-4.7L14 7V3"></path>
+              </svg>
+            </span>
+            <span class="potion-qty" id="potion-qty">2</span>
+          </button>
+
+          <button type="button" class="atk-btn" id="btn-attack" aria-label="Attack">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path>
+              <path d="M13 19l6-6"></path>
+              <path d="M16 16l4 4"></path>
+              <path d="M19 21l2-2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide-up RPG Drawer (Bag / Skills / Hero & Quests / Shop) -->
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <header class="sheet-header">
+          <h2 id="drawer-title">Adventurer Pack</h2>
+          <div class="sheet-header-right">
+            <span class="sheet-gold" id="drawer-gold">25g</span>
+            <button type="button" class="close-btn" id="drawer-close" aria-label="Close menu">&times;</button>
+          </div>
+        </header>
+
+        <nav class="sheet-tabs" role="tablist">
+          <button type="button" class="tab-btn is-active" data-tab="bag" role="tab">Bag</button>
+          <button type="button" class="tab-btn" data-tab="skills" role="tab">Skills <i class="tab-pip" id="skill-tab-pip" hidden></i></button>
+          <button type="button" class="tab-btn" data-tab="hero" role="tab">Hero &amp; Quest <i class="tab-pip" id="quest-tab-pip" hidden></i></button>
+          <button type="button" class="tab-btn" data-tab="shop" role="tab">Shop</button>
+        </nav>
+
+        <div class="sheet-body" id="sheet-body"></div>
+      </section>
+    </div>
+
+    <!-- Title / Defeat / Victory Modal Overlay -->
+    <div class="screen-overlay" id="screen-overlay">
+      <div class="modal-card" id="modal-card">
+        <span class="modal-kicker" id="modal-kicker">2D ACTION RPG</span>
+        <h1 class="modal-title" id="modal-title">Embervale</h1>
+        <p class="modal-desc" id="modal-desc">
+          Venture from Emberhearth Village into Whisperwood and Sunken Ruins. Gather Gold &amp; EXP, craft your build with items and active skills, and extinguish the Cinder Warden.
+        </p>
+
+        <ul class="feature-pills" id="modal-tips">
+          <li><strong>Items &amp; Gear</strong><span>Weapons, armor, rings &amp; potions</span></li>
+          <li><strong>EXP &amp; Level Up</strong><span>Grow stronger &amp; unlock skills</span></li>
+          <li><strong>Skills &amp; Gold</strong><span>4 active skills + village shop</span></li>
+        </ul>
+
+        <div class="modal-stats-summary" id="modal-summary" hidden></div>
+
+        <div class="modal-actions">
+          <button type="button" class="primary-btn" id="btn-primary-action">Start Adventure</button>
+          <button type="button" class="secondary-btn" id="btn-secondary-action" hidden>New Adventure</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
